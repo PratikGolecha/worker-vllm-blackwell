@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.9.1-base-ubuntu22.04 
+FROM nvidia/cuda:13.2.1-base-ubuntu24.04
 
 RUN apt-get update -y \
     && apt-get install -y python3-pip curl \
@@ -6,11 +6,11 @@ RUN apt-get update -y \
 
 ENV PATH="/root/.local/bin:$PATH"
 
-RUN ldconfig /usr/local/cuda-12.9/compat/
+RUN ldconfig /usr/local/cuda-13.2/compat/ 2>/dev/null || ldconfig
 
-# Install vLLM with FlashInfer - use CUDA 12.9 PyTorch wheels
+# Install vLLM 0.21.0 with FlashInfer - native TurboQuant + Blackwell (sm_120) support
 RUN uv pip install --system "packaging>=24.2" && \
-    uv pip install --system "vllm[flashinfer]==0.19.1" --extra-index-url https://download.pytorch.org/whl/cu129
+    uv pip install --system "vllm[flashinfer]==0.21.0" --extra-index-url https://download.pytorch.org/whl/cu130
 
 # Install additional Python dependencies (after vLLM to avoid PyTorch version conflicts)
 COPY builder/requirements.txt /requirements.txt
@@ -43,6 +43,11 @@ ENV MODEL_NAME=$MODEL_NAME \
     # (tokenizers uses Rust's rayon which tries to spawn threads = CPU cores)
     TOKENIZERS_PARALLELISM=false \
     RAYON_NUM_THREADS=4
+
+# Blackwell (sm_120) compatibility
+ENV VLLM_FLASH_ATTN_VERSION=2 \
+    PYTORCH_ALLOC_CONF=expandable_segments:True \
+    HF_HUB_ENABLE_HF_TRANSFER=1
 
 ENV PYTHONPATH="/:/vllm-workspace"
 
