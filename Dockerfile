@@ -12,9 +12,10 @@ ENV UV_SYSTEM_PYTHON=1 \
 
 RUN ldconfig /usr/local/cuda-13.2/compat/ 2>/dev/null || ldconfig
 
-# Install vLLM 0.21.0 with FlashInfer - native TurboQuant + Blackwell (sm_120) support
+# Install vLLM 0.21.0 - native TurboQuant + Blackwell (sm_120) support
 RUN uv pip install --system "packaging>=24.2" && \
-    uv pip install --system "vllm[flashinfer]==0.21.0" --extra-index-url https://download.pytorch.org/whl/cu130
+    uv pip install --system "vllm==0.21.0" --extra-index-url https://download.pytorch.org/whl/cu130 && \
+    uv pip install --system "flashinfer-python[cu13]"
 
 # Install additional Python dependencies (after vLLM to avoid PyTorch version conflicts)
 COPY builder/requirements.txt /requirements.txt
