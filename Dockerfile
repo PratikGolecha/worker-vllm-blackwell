@@ -6,6 +6,10 @@ RUN apt-get update -y \
 
 ENV PATH="/root/.local/bin:$PATH"
 
+# Ubuntu 24.04 PEP 668: allow uv to install into the system Python
+ENV UV_SYSTEM_PYTHON=1 \
+    UV_BREAK_SYSTEM_PACKAGES=1
+
 RUN ldconfig /usr/local/cuda-13.2/compat/ 2>/dev/null || ldconfig
 
 # Install vLLM 0.21.0 with FlashInfer - native TurboQuant + Blackwell (sm_120) support
