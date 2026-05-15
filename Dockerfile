@@ -44,10 +44,12 @@ ENV MODEL_NAME=$MODEL_NAME \
     TOKENIZERS_PARALLELISM=false \
     RAYON_NUM_THREADS=4
 
-# Blackwell (sm_120) compatibility
+# Blackwell (sm_120) compatibility + long context support
 ENV VLLM_FLASH_ATTN_VERSION=2 \
     PYTORCH_ALLOC_CONF=expandable_segments:True \
-    HF_HUB_ENABLE_HF_TRANSFER=1
+    HF_HUB_ENABLE_HF_TRANSFER=1 \
+    # Required for context lengths > 262K tokens (e.g. 1M)
+    VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
 
 ENV PYTHONPATH="/:/vllm-workspace"
 
