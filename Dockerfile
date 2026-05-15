@@ -13,8 +13,13 @@ ENV UV_SYSTEM_PYTHON=1 \
 RUN ldconfig /usr/local/cuda-13.2/compat/ 2>/dev/null || ldconfig
 
 # Install vLLM 0.21.0 - native TurboQuant + Blackwell (sm_120) support
-RUN uv pip install --system "packaging>=24.2" && \
-    uv pip install --system "vllm==0.21.0" --extra-index-url https://download.pytorch.org/whl/cu130 && \
+# --index-strategy unsafe-best-match: uv picks the best version across all indexes
+# (needed because setuptools on the PyTorch cu130 index is stale at <=70.2.0,
+#  but vllm==0.21.0 requires setuptools>=77.0.3; PyPI has the correct version)
+RUN uv pip install --system "packaging>=24.2" "setuptools>=77.0.3,<81.0.0" && \
+    uv pip install --system "vllm==0.21.0" \
+        --extra-index-url https://download.pytorch.org/whl/cu130 \
+        --index-strategy unsafe-best-match && \
     uv pip install --system "flashinfer-python[cu13]"
 
 # Install additional Python dependencies (after vLLM to avoid PyTorch version conflicts)
